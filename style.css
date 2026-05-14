@@ -1,0 +1,66 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif;
+  background: linear-gradient(135deg, #0d1b2a 0%, #1a2f4a 50%, #0d1b2a 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.container {
+  text-align: center;
+  padding: 60px 40px;
+  max-width: 600px;
+}
+
+.badge {
+  display: inline-block;
+  background: rgba(255, 80, 50, 0.2);
+  border: 1px solid rgba(255, 80, 50, 0.5);
+  color: #ff6b4a;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 6px 18px;
+  border-radius: 999px;
+  margin-bottom: 32px;
+  letter-spacing: 0.05em;
+}
+
+h1 {
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.35;
+  margin-bottom: 20px;
+  color: #f0f4ff;
+}
+
+.highlight {
+  color: #ff6b4a;
+}
+
+.sub {
+  font-size: 16px;
+  color: #8fa8c8;
+  margin-bottom: 36px;
+  line-height: 1.6;
+}
+
+.name-card {
+  display: inline-block;
+  background: rgba(79, 142, 247, 0.15);
+  border: 1px solid rgba(79, 142, 247, 0.4);
+  color: #7eb8ff;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 12px 28px;
+  border-radius: 12px;
+  margin-bottom: 28px;
+}
+
+.hint {
+  font-size: 13px;
+  color: #4a6a8a;
+}

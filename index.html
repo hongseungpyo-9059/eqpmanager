@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>소방 장비 이력 관리</title>
+    <!-- 더 안정적인 CDN 주소로 교체 -->
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+    <style>
+        :root { --fire-red: #d32f2f; --dark-text: #1a1a1a; }
+        body { font-family: 'Pretendard', sans-serif; background-color: #f0f2f5; padding: 20px; }
+        .container { max-width: 900px; margin: auto; background: grey; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        
+        h2 { color: var(--fire-red); border-bottom: 3px solid var(--fire-red); padding-bottom: 10px; margin-bottom: 25px; }
+
+        .input-form { display: grid; gap: 15px; margin-bottom: 25px; background: #f9f9f9; padding: 20px; border-radius: 10px; }
+        .input-row { display: flex; align-items: center; }
+        .input-row label { width: 120px; font-weight: bold; color: var(--dark-text); } /* 라벨 폭 확장 */
+        .input-row input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 5px; font-size: 1rem; }
+
+        .btn-main { background: var(--fire-red); color: white; border: none; padding: 15px; border-radius: 5px; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; transition: 0.3s; }
+        .btn-main:hover { background: #b71c1c; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; background: grey; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+        th { background: #eee6; }
+
+        /* QR 썸네일 영역 - 배경색을 주어 생성 여부 확인 가능하게 설정 */
+        .qr-small { width: 60px; height: 60px; margin: auto; cursor: pointer; background: #fff; border: 1px solid #ddd; display: flex; justify-content: center; align-items: center; }
+        
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 30px; border-radius: 15px; text-align: center; position: relative; }
+        .close-btn { position: absolute; top: 10px; right: 20px; font-size: 30px; cursor: pointer; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🚒 강릉소방서 장비 이력 QR 생성기</h2>
+    
+    <div class="input-form">
+        <div class="input-row">
+            <label>장비명 :</label>
+            <input type="text" id="name" placeholder="예: 공기호흡기">
+        </div>
+        <div class="input-row">
+            <label>간단 메모 :</label>
+            <input type="text" id="memo" placeholder="예: 1번 차량 적재">
+        </div>
+        <div class="input-row">
+            <label>내용연수 :</label>
+            <input type="text" id="life" placeholder="예: 10년">
+        </div>
+        <div class="input-row">
+            <label>입력일자 :</label>
+            <input type="date" id="date">
+        </div>
+        <button class="btn-main" onclick="createQR()">QR코드 생성 및 목록 추가</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>QR (클릭)</th>
+                <th>장비명</th>
+                <th>메모</th>
+                <th>내용연수</th>
+                <th>입력일자</th>
+            </tr>
+        </thead>
+        <tbody id="list"></tbody>
+    </table>
+</div>
+
+<div id="modal" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h3 id="m-title" style="margin-top:0; color:#d32f2f;"></h3>
+        <div id="big-qr" style="display: inline-block; padding: 15px; background: white; border: 1px solid #eee;"></div>
+        <p style="margin-top: 15px; color: #444; font-weight: 500;">위 코드를 스캔하면 장비 정보가 나타납니다.</p>
+    </div>
+</div>
+
+<script>
+    // 오늘 날짜 자동 입력
+    document.getElementById('date').value = new Date().toISOString().substring(0, 10);
+
+    function createQR() {
+        const n = document.getElementById('name').value;
+        const m = document.getElementById('memo').value;
+        const l = document.getElementById('life').value;
+        const d = document.getElementById('date').value;
+
+        if(!n) { alert("장비명을 입력해 주세요."); return; }
+
+        const list = document.getElementById('list');
+        const row = list.insertRow(0);
+        
+        const qrCell = row.insertCell(0);
+        const qrId = "qr_" + Date.now();
+        const qrDiv = document.createElement('div');
+        qrDiv.id = qrId;
+        qrDiv.className = "qr-small";
+        
+        const qrContent = `[소방장비정보]\n장비명: ${n}\n메모: ${m}\n내용연수: ${l}\n등록일: ${d}`;
+        
+        qrDiv.onclick = () => showBigQR(qrContent, n);
+        qrCell.appendChild(qrDiv);
+
+        row.insertCell(1).innerText = n;
+        row.insertCell(2).innerText = m;
+        row.insertCell(3).innerText = l;
+        row.insertCell(4).innerText = d;
+
+        // 라이브러리가 로드되었는지 확인 후 생성
+        if (typeof QRCode !== 'undefined') {
+            new QRCode(document.getElementById(qrId), {
+                text: qrContent,
+                width: 50,
+                height: 50,
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        } else {
+            alert("QR 라이브러리를 불러오는 중입니다. 잠시 후 다시 시도해 주세요.");
+        }
+
+        // 입력창 비우기 (일자는 유지)
+        document.getElementById('name').value = "";
+        document.getElementById('memo').value = "";
+    }
+
+    function showBigQR(data, title) {
+        document.getElementById('modal').style.display = "flex";
+        document.getElementById('m-title').innerText = title;
+        const bigQrArea = document.getElementById('big-qr');
+        bigQrArea.innerHTML = "";
+
+        new QRCode(bigQrArea, {
+            text: data,
+            width: 250,
+            height: 250
+        });
+    }
+
+    function closeModal() {
+        document.getElementById('modal').style.display = "none";
+    }
+</script>
+
+</body>
+</html>
